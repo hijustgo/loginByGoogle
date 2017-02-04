@@ -1,0 +1,74 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>demo</title>
+<script src="http://lib.sinaapp.com/js/jquery/1.9.1/jquery-1.9.1.min.js"></script>
+<script src="./api_client.js"></script>
+</head>
+
+<body>
+<button id="googleLogin">Google登录</button>
+<script>
+    $(function () {
+        //成功的回调函数
+        function onSuccess(googleUser) {
+            var profile = googleUser.getBasicProfile();
+            var authProfile = googleUser.getAuthResponse();
+
+            var uid = googleUser.El;
+            var userName = profile.getName();
+            /*var userImage = profile.getImageUrl();
+            var userEmail = profile.getEmail();*/
+            var idToken = encodeURIComponent(authProfile.id_token);
+
+
+            if (uid && userName) {
+                //后续本站登录处理
+                $.ajax({
+                    url: "check.php",
+                    data: {
+                        uid: uid,
+                        userName: userName,
+                        idToken: idToken,
+                        userType: 'google'
+                    },
+                    dataType: "json",
+                    type: "post",
+                    success: function(data) {
+                        console.log(data);return;
+
+                        if (data.success == true) {
+                            alert('ok');
+                            window.location.reload(true);
+                        } else {
+                            alert.alert("notOk");
+                        }
+                    }
+
+                });
+            } else {
+                alert.alert("notOk");
+            }
+        }
+
+        //失败的回调函数
+        function onFailure(error) {
+            console.log(error);
+            alert('notOk');
+        }
+
+        //Google登录
+        gapi.load('auth2', function() {
+            auth2 = gapi.auth2.init({
+                client_id: '', //TODO: 到Google申请的
+                cookiepolicy: 'single_host_origin',
+                scope: 'https://www.googleapis.com/auth/plus.login https://www.googleapis.com/auth/userinfo.email'
+            });
+
+            auth2.attachClickHandler('googleLogin', {}, onSuccess, onFailure);
+        });
+    })
+</script>
+</body>
+</html>
